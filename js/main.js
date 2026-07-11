@@ -157,18 +157,31 @@ function heroStory() {
   });
 }
 
-if (!prefersReduced) {
-  let ticking = false;
-  const schedule = () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        heroStory();
-        ticking = false;
-      });
-      ticking = true;
+/* Reduced motion: no animation, but keep the design — chips sit statically
+   in their final fanned-out positions. */
+function setStaticHeroState() {
+  const targets = window.innerWidth < 720 ? CHIP_TARGETS_MOBILE : CHIP_TARGETS;
+  chips.forEach((chip, i) => {
+    const t = targets[i];
+    chip.style.opacity = 1;
+    chip.style.transform =
+      `translate(calc(-50% + ${t.dx}px), calc(-50% + ${t.dy}px)) rotate(${t.r}deg)`;
+  });
+}
+
+if (prefersReduced) {
+  setStaticHeroState();
+} else {
+  /* rAF loop instead of scroll events — scroll events are throttled or
+     delayed in some mobile/in-app browsers, a frame loop is not. */
+  let lastY = -1;
+  let lastW = -1;
+  (function loop() {
+    if (window.scrollY !== lastY || window.innerWidth !== lastW) {
+      lastY = window.scrollY;
+      lastW = window.innerWidth;
+      heroStory();
     }
-  };
-  window.addEventListener("scroll", schedule, { passive: true });
-  window.addEventListener("resize", schedule);
-  heroStory();
+    requestAnimationFrame(loop);
+  })();
 }

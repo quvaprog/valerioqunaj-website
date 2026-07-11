@@ -600,7 +600,6 @@ section { padding: clamp(70px, 10vw, 130px) 20px; max-width: 1100px; margin: 0 a
   html { scroll-behavior: auto; }
   .hero-name .line .ch, .portrait, .hero-bottom { opacity: 1; transform: none; }
   .reveal, .reveal-left, .reveal-right, .reveal-zoom { opacity: 1; transform: none; }
-  .fchip { display: none; }
   .hero { height: auto; }
   .hero-pin { position: relative; height: auto; min-height: 100svh; }
 }
