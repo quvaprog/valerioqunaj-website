@@ -50,6 +50,15 @@ const translations = {
   },
 };
 
+/* localStorage can throw (blocked cookies, some in-app browsers) — never
+   let that kill the whole script */
+function storageGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+function storageSet(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+}
+
 function setLanguage(lang) {
   const dict = translations[lang] || translations.en;
   document.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -60,14 +69,14 @@ function setLanguage(lang) {
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.lang === lang);
   });
-  localStorage.setItem("lang", lang);
+  storageSet("lang", lang);
 }
 
 document.querySelectorAll(".lang-btn").forEach((btn) => {
   btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
 });
 
-setLanguage(localStorage.getItem("lang") || "en");
+setLanguage(storageGet("lang") || "en");
 
 /* ============ Hero letter stagger ============ */
 document.querySelectorAll(".hero-name .line").forEach((line, lineIndex) => {
@@ -133,9 +142,11 @@ const CHIP_LENGTH = 0.34; // how much progress one chip's flight takes
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
-function heroStory() {
-  const runway = hero.offsetHeight - window.innerHeight;
-  const p = runway > 0 ? clamp01(window.scrollY / runway) : 1;
+function heroStory(heroRect) {
+  /* progress from the hero's own position — more robust than scrollY when
+     the page scrolls inside a wrapper (in-app browsers etc.) */
+  const runway = heroRect.height - window.innerHeight;
+  const p = runway > 0 ? clamp01(-heroRect.top / runway) : 1;
   const mobile = window.innerWidth < 720;
   const targets = mobile ? CHIP_TARGETS_MOBILE : CHIP_TARGETS;
   const k = mobile ? 0.5 : 1; // shorter name split on mobile
@@ -169,18 +180,25 @@ function setStaticHeroState() {
   });
 }
 
-if (prefersReduced) {
+/* If sticky positioning is unavailable, skip the pinned story entirely and
+   show the chips statically instead of leaving a huge empty runway. */
+const stickyWorks = getComputedStyle(document.querySelector(".hero-pin"))
+  .position.indexOf("sticky") !== -1;
+
+if (prefersReduced || !stickyWorks) {
+  if (!stickyWorks) document.documentElement.classList.add("no-sticky");
   setStaticHeroState();
 } else {
   /* rAF loop instead of scroll events — scroll events are throttled or
      delayed in some mobile/in-app browsers, a frame loop is not. */
-  let lastY = -1;
-  let lastW = -1;
+  let lastTop = null;
+  let lastW = null;
   (function loop() {
-    if (window.scrollY !== lastY || window.innerWidth !== lastW) {
-      lastY = window.scrollY;
+    const rect = hero.getBoundingClientRect();
+    if (rect.top !== lastTop || window.innerWidth !== lastW) {
+      lastTop = rect.top;
       lastW = window.innerWidth;
-      heroStory();
+      heroStory(rect);
     }
     requestAnimationFrame(loop);
   })();
