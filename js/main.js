@@ -111,9 +111,9 @@ document
 /* ============ Hero scroll story (pinned) ============ */
 /* The hero section is a 280vh runway with a sticky stage. While it is
    pinned, scroll progress drives the intro: the name splits apart, the
-   watermark drifts up and the chips fly out of the portrait one by one. */
-const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
+   watermark drifts up and the chips fly out of the portrait one by one.
+   Runs regardless of prefers-reduced-motion: all motion here is directly
+   scroll-driven, so the user controls it. */
 const hero = document.querySelector(".hero");
 const heroFirst = document.getElementById("name-first");
 const heroLast = document.getElementById("name-last");
@@ -131,10 +131,10 @@ const CHIP_TARGETS = [
 /* On mobile the portrait fills most of the width, so chips get their own
    targets (and render above the photo, see CSS) */
 const CHIP_TARGETS_MOBILE = [
-  { dx: -130, dy: -170, r: -9 },
-  { dx: 135, dy: -205, r: 7 },
+  { dx: -130, dy: -100, r: -9 },
+  { dx: 135, dy: -125, r: 7 },
   { dx: -125, dy: 95, r: -6 },
-  { dx: 135, dy: 170, r: 9 },
+  { dx: 110, dy: 170, r: 9 },
 ];
 const CHIP_STAGGER = 0.16; // scroll-progress gap between chips
 const CHIP_LENGTH = 0.34; // how much progress one chip's flight takes
@@ -168,7 +168,7 @@ function heroStory(heroRect) {
   });
 }
 
-/* Reduced motion: no animation, but keep the design — chips sit statically
+/* Fallback: no animation, but keep the design — chips sit statically
    in their final fanned-out positions. */
 function setStaticHeroState() {
   const targets = window.innerWidth < 720 ? CHIP_TARGETS_MOBILE : CHIP_TARGETS;
@@ -185,8 +185,8 @@ function setStaticHeroState() {
 const stickyWorks = getComputedStyle(document.querySelector(".hero-pin"))
   .position.indexOf("sticky") !== -1;
 
-if (prefersReduced || !stickyWorks) {
-  if (!stickyWorks) document.documentElement.classList.add("no-sticky");
+if (!stickyWorks) {
+  document.documentElement.classList.add("no-sticky");
   setStaticHeroState();
 } else {
   /* rAF loop instead of scroll events — scroll events are throttled or
