@@ -518,27 +518,88 @@ section { padding: clamp(70px, 10vw, 130px) 20px; max-width: 1100px; margin: 0 a
 }
 
 /* ============ Story ============ */
+/* Timeline 16→19: horizontal with a connecting line on desktop,
+   vertical rail on mobile. */
 .story .section-title { text-align: center; margin-bottom: 44px; }
 .timeline {
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 18px;
-  max-width: 860px;
+  max-width: 1000px;
   margin: 0 auto;
 }
-.timeline-item { padding: 34px 30px; transition: transform 0.3s ease, border-color 0.3s ease; }
-.timeline-item:hover { transform: translateY(-5px); border-color: rgba(34, 211, 238, 0.35); }
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 12.5%;
+  right: 12.5%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    rgba(74, 222, 128, 0.1), rgba(74, 222, 128, 0.55),
+    rgba(34, 211, 238, 0.55), rgba(34, 211, 238, 0.1));
+}
+.timeline-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.timeline-dot {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--accent-1);
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.45);
+  margin-bottom: 20px;
+}
+.timeline-dot::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--accent-grad);
+}
+.timeline-card {
+  flex: 1;
+  width: 100%;
+  padding: 26px 22px;
+  text-align: center;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+.timeline-card:hover { transform: translateY(-5px); border-color: rgba(34, 211, 238, 0.35); }
 .timeline-age {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 2.6rem;
+  font-size: clamp(1.9rem, 2.6vw, 2.4rem);
   background: var(--accent-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   margin-bottom: 8px;
 }
-.timeline-item p { color: var(--muted); font-size: 0.98rem; }
+.timeline-item p { color: var(--muted); font-size: 0.94rem; }
+/* placeholder years — filled in later */
+.timeline-item.soon .timeline-card {
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.02);
+}
+.timeline-item.soon .timeline-dot {
+  border-style: dashed;
+  box-shadow: none;
+}
+.timeline-item.soon .timeline-dot::after { opacity: 0.35; }
+.timeline-item.soon p { opacity: 0.55; }
+/* gentle left-to-right stagger on reveal */
+.timeline-item:nth-child(2) { transition-delay: 0.08s; }
+.timeline-item:nth-child(3) { transition-delay: 0.16s; }
+.timeline-item:nth-child(4) { transition-delay: 0.24s; }
 
 /* ============ Connect ============ */
 .connect { text-align: center; }
@@ -622,7 +683,31 @@ section { padding: clamp(70px, 10vw, 130px) 20px; max-width: 1100px; margin: 0 a
   .hero-watermark { font-size: 42vw; }
 
   .stats { grid-template-columns: 1fr; }
-  .timeline { grid-template-columns: 1fr; }
+
+  /* timeline turns vertical: rail on the left, cards to the right.
+     The rail is drawn per item (dot to next dot) so it ends cleanly
+     at the last dot instead of running past it. */
+  .timeline { display: flex; flex-direction: column; gap: 16px; }
+  .timeline::before { display: none; }
+  .timeline-item { flex-direction: row; align-items: stretch; gap: 16px; }
+  .timeline-item::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 24px;
+    bottom: -18px;
+    width: 2px;
+    border-radius: 2px;
+  }
+  .timeline-item:nth-child(1)::before { background: rgba(74, 222, 128, 0.45); }
+  .timeline-item:nth-child(2)::before {
+    background: linear-gradient(180deg, rgba(74, 222, 128, 0.45), rgba(34, 211, 238, 0.45));
+  }
+  .timeline-item:nth-child(3)::before { background: rgba(34, 211, 238, 0.45); }
+  .timeline-item:last-child::before { display: none; }
+  .timeline-dot { margin-bottom: 0; margin-top: 2px; }
+  .timeline-card { text-align: left; padding: 22px 20px; }
+  .timeline-item:nth-child(n) { transition-delay: 0s; }
   .footer { justify-content: center; text-align: center; }
 
   /* squared-off look on mobile */
