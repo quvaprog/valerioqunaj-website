@@ -704,11 +704,9 @@ section { padding: clamp(70px, 10vw, 130px) 20px; max-width: 1100px; margin: 0 a
   .timeline-item:nth-child(n) { transition-delay: 0s; }
   .footer { justify-content: center; text-align: center; }
 
-  /* squared-off look on mobile */
+  /* squared-off look on mobile — clickable buttons keep the round
+     desktop pill shape and size */
   .glass { border-radius: 8px; }
-  .btn { border-radius: 10px; }
-  .lang-switch { border-radius: 8px; }
-  .lang-btn { border-radius: 6px; }
   .chip { border-radius: 5px; }
   .fchip { border-radius: 6px; padding: 8px 12px; font-size: 0.72rem; z-index: 2; }
   .scroll-hint { border-radius: 8px; }
